@@ -9,7 +9,7 @@ router.register('users', views.UserList)
 router.register('tasks', views.TaskList)
 router.register('experts', views.ExpertList)
 router.register('assignees', views.AssigneeList)
-router.register('BecomeAssigneeRequests',views.BecomeAssigneeRequestView)
+router.register('BecomeAssigneeRequests', views.BecomeAssigneeRequestView)
 
 urlpatterns = [
     path('', include(router.urls)),
