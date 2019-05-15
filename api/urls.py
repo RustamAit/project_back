@@ -6,9 +6,9 @@ from api import views
 
 router = routers.DefaultRouter()
 router.register('users', views.UserList)
-#router.register('tasks', views.TaskList)
 router.register('experts', views.ExpertList)
 router.register('assignees', views.AssigneeList)
+router.register('taskList', views.TaskArray)
 router.register('BecomeAssigneeRequests',views.BecomeAssigneeRequestView)
 
 urlpatterns = [

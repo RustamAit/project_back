@@ -93,6 +93,14 @@ class TaskList(generics.ListCreateAPIView):
 
 
 
+
+class TaskArray(viewsets.ModelViewSet):
+    queryset = Task.objects.all()
+    serializer_class = TaskReadSerialize
+
+
+
+
 @authentication_classes((TokenAuthentication,))
 class ExpertList(viewsets.ModelViewSet):
     queryset = Expert.objects.all()
@@ -129,9 +137,10 @@ def login_view(request):
         print(user_groups[0])
         token, _ = Token.objects.get_or_create(user=user)
         res_body = {}
+        expert = Expert.objects.get(user = user)
         res_body['token'] = token.key
         res_body['user_type'] = str(user_groups[0])
-        res_body['user_id'] = user.id
+        res_body['user_id'] = expert.id
         return Response(res_body, status=status.HTTP_200_OK)
 
 
