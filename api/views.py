@@ -1,13 +1,11 @@
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render
-from django.http import Http404
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, logout
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import authentication_classes, api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 from api.models import *
 from api.serializers import *
 import json
@@ -46,6 +44,55 @@ class BecomeAssigneeRequestList(APIView):
         snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class TaskView(APIView):
+
+    def get(self, request):
+        categories = Task.objects.all()
+        serializer = TaskSerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = TaskSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    def put(self, request, pk, format=None):
+        snippet = Task.objects.get_object(pk)
+        serializer = TaskSerializer(snippet, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        snippet = Task.objects.get_object(pk)
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+@authentication_classes((TokenAuthentication,))
+class TaskList(generics.ListCreateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskReadSerialize
+
+    def create(self, request, *args, **kwargs):
+        created_by = request.data.get("created_by")
+        task_status = request.data.get("status")
+        address = request.data.get("address")
+        description = request.data.get('description')
+        title = request.data.get('title')
+        task = Task(title = title, description = description, address=address,
+                    created_by=Expert.objects.get(pk=created_by), status = Status.objects.get(pk = 2) )
+        task.save()
+        return Response({"success: true"}, status=status.HTTP_200_OK)
+
+
+
 @authentication_classes((TokenAuthentication,))
 class ExpertList(viewsets.ModelViewSet):
     queryset = Expert.objects.all()
@@ -57,18 +104,10 @@ class AssigneeList(viewsets.ModelViewSet):
     queryset = Assignee.objects.all()
     serializer_class = AssigneeSerializer
 
-
-@authentication_classes((TokenAuthentication,))
-class TaskList(viewsets.ModelViewSet):
-    queryset = Task.objects.all()
-    serializer_class = TaskSerializer
-
-
 @authentication_classes((TokenAuthentication,))
 class UserList(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
 
 
 @api_view(["POST"])
@@ -96,13 +135,10 @@ def login_view(request):
         return Response(res_body, status=status.HTTP_200_OK)
 
 
-
 @api_view(['POST'])
 def logout_view(request):
-    request.auth.delete()
+    logout(request)
     return Response({"success": True}, status=status.HTTP_204_NO_CONTENT)
-
-
 
 @authentication_classes((TokenAuthentication,))
 @api_view(['PUT'])

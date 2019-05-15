@@ -9,6 +9,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
+class StatusSerializer(serializers.Serializer):
+    status_name = serializers.CharField()
+    status_color = serializers.CharField()
+
+
 class BecomeAssigneeRequestSerializer(serializers.ModelSerializer):
     user = UserSerializer
     class Meta:
@@ -31,12 +37,16 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class TaskReadSerialize(serializers.ModelSerializer):
+    created_by = ExpertSerializer(many=False)
+    status = StatusSerializer(many=False)
+
+    class Meta:
+        model = Task
+        fields = "__all__"
+
 class AssigneeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assignee
         fields = "__all__"
 
-
-class StatusSerializer(serializers.Serializer):
-    status_name = serializers.CharField()
-    status_color = serializers.CharField()
