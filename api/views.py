@@ -97,7 +97,18 @@ class TaskList(generics.ListCreateAPIView):
 @authentication_classes((TokenAuthentication,))
 class TaskArray(viewsets.ModelViewSet):
     queryset = Task.objects.all()
-    serializer_class = TaskReadSerialize
+    serializer_class = TaskSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(data={'success': True}, status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
 @authentication_classes((TokenAuthentication,))
 class UserTasks(generics.ListAPIView):
