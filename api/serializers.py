@@ -10,10 +10,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class BecomeAssigneeRequestSerializer(serializers.ModelSerializer):
+    user = UserSerializer
     class Meta:
         model = BecomeAssigneeRequest
         fields = "__all__"
 
+    def create(self, validated_data):
+        bar = BecomeAssigneeRequest.objects.create(**validated_data)
+        return bar
 
 class ExpertSerializer(serializers.ModelSerializer):
     class Meta:

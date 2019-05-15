@@ -13,8 +13,8 @@ router.register('BecomeAssigneeRequests',views.BecomeAssigneeRequestView)
 
 urlpatterns = [
     path('', include(router.urls)),
-    #path('becameAssigneeRequest/', views.BecomeAssigneeRequestView.as_view())
-    path('login/', views.login),
-    path('logout/', views.logout),
+    path('becameAssigneeRequestList/', views.BecomeAssigneeRequestList.as_view()),
+    path('login/', views.login_view),
+    path('logout/', views.logout_view),
     path('executeTask/', views.addExecutor),
 ]

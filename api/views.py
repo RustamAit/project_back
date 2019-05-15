@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -18,6 +18,33 @@ class BecomeAssigneeRequestView(viewsets.ModelViewSet):
     queryset = BecomeAssigneeRequest.objects.all()
     serializer_class = BecomeAssigneeRequestSerializer
 
+
+class BecomeAssigneeRequestList(APIView):
+    def get(self, request):
+        categories = BecomeAssigneeRequest.objects.all()
+        serializer = BecomeAssigneeRequestSerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = BecomeAssigneeRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    def put(self, request, pk, format=None):
+        snippet = BecomeAssigneeRequest.objects.get_object(pk)
+        serializer = BecomeAssigneeRequestSerializer(snippet, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        snippet = BecomeAssigneeRequest.objects.get_object(pk)
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @authentication_classes((TokenAuthentication,))
 class ExpertList(viewsets.ModelViewSet):
@@ -47,7 +74,7 @@ class UserList(viewsets.ModelViewSet):
 @csrf_exempt
 @api_view(["POST"])
 @permission_classes((AllowAny,))
-def login(request):
+def login_view(request):
     username = request.data.get("username")
     password = request.data.get("password")
     if username is None or password is None:
@@ -58,6 +85,7 @@ def login(request):
         return Response({'error': 'Invalid Credentials'},
                         status=status.HTTP_404_NOT_FOUND)
     else:
+        login(request, user)
         user_groups = []
         for i in user.groups.all():
             user_groups.append(i)
@@ -67,14 +95,13 @@ def login(request):
         res_body['token'] = token.key
         res_body['user_type'] = str(user_groups[0])
         res_body['user_id'] = user.id
-        return Response(res_body,
-                    status=status.HTTP_200_OK)
+        return Response(res_body, status=status.HTTP_200_OK)
 
-
+@csrf_exempt
 @api_view(['POST'])
-def logout(request):
-    request.auth.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
+def logout_view(request):
+    request.user.auth_token.delete()
+    return Response({"success": True}, status=status.HTTP_204_NO_CONTENT)
 
 @authentication_classes((TokenAuthentication,))
 @api_view(['PUT'])
