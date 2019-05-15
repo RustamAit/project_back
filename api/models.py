@@ -1,9 +1,10 @@
 import datetime
+from rest_framework.authtoken.models import Token
 
 from django.contrib.auth.models import User
 from django.db import models
 
-# Create your models here.
+
 
 
 class Status(models.Model):
@@ -43,7 +44,4 @@ class BecomeAssigneeRequest(models.Model):
     isJudged = models.BooleanField
     essay = models.CharField(max_length=1000)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-
-
 
