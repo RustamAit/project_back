@@ -16,6 +16,7 @@ urlpatterns = [
     path('becameAssigneeRequestList/', views.BecomeAssigneeRequestList.as_view()),
     path('login/', views.login_view),
     path('logout/', views.logout_view),
+    path('userTasks/', views.UserTasks.as_view()),
     path('task/crud', views.TaskView.as_view()),
     path('tasks/',views.TaskList.as_view()),
     path('executeTask/', views.addExecutor),

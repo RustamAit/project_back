@@ -1,8 +1,9 @@
 from django.contrib.auth import authenticate, logout
+from django.views.generic import ListView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import authentication_classes, api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets, generics
@@ -16,8 +17,10 @@ class BecomeAssigneeRequestView(viewsets.ModelViewSet):
     queryset = BecomeAssigneeRequest.objects.all()
     serializer_class = BecomeAssigneeRequestSerializer
 
-
+@authentication_classes((TokenAuthentication,))
 class BecomeAssigneeRequestList(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         categories = BecomeAssigneeRequest.objects.all()
         serializer = BecomeAssigneeRequestSerializer(categories, many=True)
@@ -43,8 +46,9 @@ class BecomeAssigneeRequestList(APIView):
         snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
+@authentication_classes((TokenAuthentication,))
 class TaskView(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         categories = Task.objects.all()
@@ -76,6 +80,8 @@ class TaskView(APIView):
 class TaskList(generics.ListCreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskReadSerialize
+    permission_classes = (IsAuthenticated,)
+
 
     def create(self, request, *args, **kwargs):
         created_by = request.data.get("created_by")
@@ -88,11 +94,20 @@ class TaskList(generics.ListCreateAPIView):
         task.save()
         return Response({"success: true"}, status=status.HTTP_200_OK)
 
-
+@authentication_classes((TokenAuthentication,))
 class TaskArray(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskReadSerialize
 
+@authentication_classes((TokenAuthentication,))
+class UserTasks(generics.ListAPIView):
+    serializer_class = TaskReadSerialize
+
+    def get_queryset(self):
+        user = self.request.query_params.get("userId")
+        print(user)
+        queryset = Assignee.objects.get(id=user).tasks
+        return queryset
 
 @authentication_classes((TokenAuthentication,))
 class ExpertList(viewsets.ModelViewSet):
@@ -104,11 +119,14 @@ class ExpertList(viewsets.ModelViewSet):
 class AssigneeList(viewsets.ModelViewSet):
     queryset = Assignee.objects.all()
     serializer_class = AssigneeSerializer
+    permission_classes = (IsAuthenticated,)
+
 
 
 @authentication_classes((TokenAuthentication,))
 class UserList(viewsets.ModelViewSet):
     queryset = User.objects.all()
+    permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
 
 
