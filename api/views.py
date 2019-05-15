@@ -30,7 +30,6 @@ class BecomeAssigneeRequestList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
     def put(self, request, pk, format=None):
         snippet = BecomeAssigneeRequest.objects.get_object(pk)
         serializer = BecomeAssigneeRequestSerializer(snippet, data=request.data)
@@ -59,7 +58,6 @@ class TaskView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
     def put(self, request, pk, format=None):
         snippet = Task.objects.get_object(pk)
         serializer = TaskSerializer(snippet, data=request.data)
@@ -74,7 +72,6 @@ class TaskView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 @authentication_classes((TokenAuthentication,))
 class TaskList(generics.ListCreateAPIView):
     queryset = Task.objects.all()
@@ -86,19 +83,15 @@ class TaskList(generics.ListCreateAPIView):
         address = request.data.get("address")
         description = request.data.get('description')
         title = request.data.get('title')
-        task = Task(title = title, description = description, address=address,
-                    created_by=Expert.objects.get(pk=created_by), status = Status.objects.get(pk = 2) )
+        task = Task(title=title, description=description, address=address,
+                    created_by=Expert.objects.get(pk=created_by), status=Status.objects.get(pk=2))
         task.save()
         return Response({"success: true"}, status=status.HTTP_200_OK)
-
-
 
 
 class TaskArray(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskReadSerialize
-
-
 
 
 @authentication_classes((TokenAuthentication,))
@@ -111,6 +104,7 @@ class ExpertList(viewsets.ModelViewSet):
 class AssigneeList(viewsets.ModelViewSet):
     queryset = Assignee.objects.all()
     serializer_class = AssigneeSerializer
+
 
 @authentication_classes((TokenAuthentication,))
 class UserList(viewsets.ModelViewSet):
@@ -137,10 +131,14 @@ def login_view(request):
         print(user_groups[0])
         token, _ = Token.objects.get_or_create(user=user)
         res_body = {}
-        expert = Expert.objects.get(user = user)
+        if str(user_groups[0]) == "experts":
+            worker = Expert.objects.get(user=user)
+        else:
+            worker = Assignee.objects.get(user=user)
+
         res_body['token'] = token.key
         res_body['user_type'] = str(user_groups[0])
-        res_body['user_id'] = expert.id
+        res_body['user_id'] = worker.id
         return Response(res_body, status=status.HTTP_200_OK)
 
 
@@ -148,6 +146,7 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return Response({"success": True}, status=status.HTTP_204_NO_CONTENT)
+
 
 @authentication_classes((TokenAuthentication,))
 @api_view(['PUT'])
@@ -158,4 +157,3 @@ def addExecutor(request):
     assignee = Assignee.objects.get(pk=userId)
     assignee.tasks.add(task)
     return Response({"success": True}, status=status.HTTP_200_OK)
-
