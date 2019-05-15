@@ -32,9 +32,9 @@ class Assignee(models.Model):
     phoneNumber = models.CharField(max_length=200)
     bin = models.CharField(max_length=200)
     address = models.CharField(max_length=200)
-    rating = models.FloatField
+    rating = models.FloatField(default=float(0))
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    tasks = models.ManyToManyField(Task)
+    tasks = models.ManyToManyField(Task, blank=True)
 
 
 class BecomeAssigneeRequest(models.Model):
