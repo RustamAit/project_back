@@ -71,7 +71,6 @@ class UserList(viewsets.ModelViewSet):
 
 
 
-@csrf_exempt
 @api_view(["POST"])
 @permission_classes((AllowAny,))
 def login_view(request):
@@ -85,7 +84,6 @@ def login_view(request):
         return Response({'error': 'Invalid Credentials'},
                         status=status.HTTP_404_NOT_FOUND)
     else:
-        login(request, user)
         user_groups = []
         for i in user.groups.all():
             user_groups.append(i)
@@ -97,11 +95,14 @@ def login_view(request):
         res_body['user_id'] = user.id
         return Response(res_body, status=status.HTTP_200_OK)
 
-@csrf_exempt
+
+
 @api_view(['POST'])
 def logout_view(request):
-    request.user.auth_token.delete()
+    request.auth.delete()
     return Response({"success": True}, status=status.HTTP_204_NO_CONTENT)
+
+
 
 @authentication_classes((TokenAuthentication,))
 @api_view(['PUT'])
